@@ -1,0 +1,29 @@
+#!/bin/bash
+#	+------------------+
+#	| Данные для входа |
+#	+------------------+
+export host='127.0.0.1'
+export login='/u:nastya'
+export domian='/d:ias-home'
+#export password='/p:123'
+
+
+#-------------------------#
+export default_prompt='xfreerdp /network:lan /dynamic-resolution /sound:sys:pulse +window-drag /rfx-mode:video +aero +menu-anims'
+export session_name=${0##*/}
+start_session() {
+	tmux new -d -s $session_name
+	tmux send -t $session_name "bash -c '$default_prompt /v:$host $login $domian $password' ; exit" ENTER
+	tmux attach -t $session_name
+}
+if [[ $(tmux list-sessions | grep $session_name) != '' ]]; then
+	echo Сессия с именем $session_name уже существует.
+	echo Убить? [Y/n]
+	read -n1 answer
+	case $answer in
+		y) tmux kill-session -t $session_name && start_session ;;
+		*) echo Прервано. ;;
+	esac
+else
+	start_session
+fi
